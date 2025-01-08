@@ -1,4 +1,6 @@
 import os
+import re
+from typing import Literal
 import pandas as pd
 import shutil
 
@@ -6,13 +8,29 @@ import shutil
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 
 # Caminhos Pastas Fotos
-FOTOS = os.path.join(ROOT_PATH, "FotosSistema") 
-FOTOS_ISOLAD = os.path.join(ROOT_PATH, "FotosIsoladas") # Pasta Fotos s/ Registro
-FOTOS_FALHAS = os.path.join(ROOT_PATH, "FotosFalhas") # Pasta Fotos c/ Erro
-EXCEL = os.path.join(ROOT_PATH, "UsuáriosSistema.xlsx")
+FOTOS = os.path.join(ROOT_PATH, "Fotos_Sistema") 
+FOTOS_ISOLAD = os.path.join(ROOT_PATH, "Fotos_Isoladas") # Pasta Fotos s/ Registro
+FOTOS_FALHAS = os.path.join(ROOT_PATH, "Fotos_Falhas") # Pasta Fotos c/ Erro
 
-# Leitura da tabela Excel definindo "Registro" como string
-df = pd.read_excel(EXCEL, dtype={"Registro": str})
+# Função - Encontrar o arquivo CSV mais recente
+def find_recent_csv(padrao: Literal['']) -> str | None:
+    csv_files = [file for file in os.listdir(ROOT_PATH) if re.match(padrao, file)]
+    csv_files.sort(reverse=True)
+    return os.path.join(ROOT_PATH, csv_files[0]) if csv_files else None
+
+# Padrão do nome dos arquivos CSV
+PADRAO_CSV = r"Pessoas_\d{6}_\d{4}.csv"
+
+# Encontra o arquivo CSV mais recente
+recent_csv_file = find_recent_csv(PADRAO_CSV)
+
+# Verificação de Existência de CSV
+if recent_csv_file is None:
+    raise FileNotFoundError(
+        "Nenhum arquivo CSV encontrado com o padrão especificado.")
+
+# Leitura da tabela CSV definindo "Registro" como string
+df = pd.read_csv(recent_csv_file, dtype={"Registro": str})
 
 # Preparação dos dados no DataFrame
 df["Registro"] = df["Registro"].str.zfill(6)  # Garante zeros à esquerda

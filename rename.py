@@ -9,9 +9,9 @@ from unidecode import unidecode
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 
 # Caminhos Pastas Fotos
-FOTOS = os.path.join(ROOT_PATH, "FotosSistema") 
-FOTOS_ISOLAD = os.path.join(ROOT_PATH, "FotosIsoladas") # Pasta Fotos s/ Registro
-FOTOS_FALHAS = os.path.join(ROOT_PATH, "FotosFalhas") # Pasta Fotos c/ Erro
+FOTOS = os.path.join(ROOT_PATH, "Fotos_Sistema") 
+FOTOS_ISOLAD = os.path.join(ROOT_PATH, "Fotos_Isoladas") # Pasta Fotos s/ Registro
+FOTOS_FALHAS = os.path.join(ROOT_PATH, "Fotos_Falhas") # Pasta Fotos c/ Erro
 
 # Certifica-se que as pastas de destino existem
 for folder in [FOTOS_ISOLAD, FOTOS_FALHAS]:
