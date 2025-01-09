@@ -5,89 +5,90 @@ from typing import Literal
 import pandas as pd
 from unidecode import unidecode
 
-# Caminho Pasta Atual
+# Current Folder Path
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
 
-# Caminhos Pastas Fotos
-FOTOS = os.path.join(ROOT_PATH, "Fotos_Sistema") 
-FOTOS_ISOLAD = os.path.join(ROOT_PATH, "Fotos_Isoladas") # Pasta Fotos s/ Registro
-FOTOS_FALHAS = os.path.join(ROOT_PATH, "Fotos_Falhas") # Pasta Fotos c/ Erro
+# Photo Folder Paths
+PHOTOS = os.path.join(ROOT_PATH, "System_Photos") # Photos Folder
+PHOTOS_ISOLATED = os.path.join(ROOT_PATH, "Isolated_Photos") # Photo Folder without Record
+PHOTOS_FAILURES = os.path.join(ROOT_PATH, "Failures_Photos") # Photo Folder with Error
 
-# Certifica-se que as pastas de destino existem
-for folder in [FOTOS_ISOLAD, FOTOS_FALHAS]:
+# Make sure the destination folders exist
+for folder in [PHOTOS_ISOLATED, PHOTOS_FAILURES]:
     os.makedirs(folder, exist_ok=True)
 
-# Função - Encontrar o arquivo CSV mais recente
-def find_recent_csv(padrao: Literal['']) -> str | None:
-    csv_files = [file for file in os.listdir(ROOT_PATH) if re.match(padrao, file)]
+# Function - Find the Most recent CSV file
+def find_recent_csv(pattern: Literal['']) -> str | None:
+    csv_files = [file for file in os.listdir(ROOT_PATH) if re.match(pattern, file)]
     csv_files.sort(reverse=True)
     return os.path.join(ROOT_PATH, csv_files[0]) if csv_files else None
 
-# Padrão do nome dos arquivos CSV
-PADRAO_CSV = r"Pessoas_\d{6}_\d{4}.csv"
+# CSV files name pattern
+PATTERN_CSV = r"Users_\d{6}_\d{4}.csv"
 
-# Encontra o arquivo CSV mais recente
-recent_csv_file = find_recent_csv(PADRAO_CSV)
+# Find the Most recent CSV file
+recent_csv_file = find_recent_csv(PATTERN_CSV)
 
-# Verificação de Existência de CSV
+# Check for CSV Existence
 if recent_csv_file is None:
     raise FileNotFoundError(
-        "Nenhum arquivo CSV encontrado com o padrão especificado.")
+        "No CSV file found with the specified pattern.")
 
-# Leitura da tabela CSV definindo "Registro" como string
-df = pd.read_csv(recent_csv_file, dtype={"Registro": str})
+# Extract data from CSV file / Setting "Record" as string
+df = pd.read_csv(recent_csv_file, dtype={"Record": str})
 
-# Preparação dos dados no DataFrame
-df["Registro"] = df["Registro"].str.zfill(6)  # Garante zeros à esquerda
-df["Usuário"] = df["Usuário"].str.strip().str.lower().apply(unidecode)
+# Preparing data in DataFrame
+df["Record"] = df["Record"].str.zfill(6)  # Ensures leading zeros
+df["User"] = df["User"].str.strip().str.lower().apply(unidecode)
 
-# Criação de dicionário para mapear Nomes de Usuários para Matrículas
-nome_p_registro = dict(zip(df["Usuário"], df["Registro"]))
+# Creating a dictionary to map Usernames to Records
+name_to_record = dict(zip(df["User"], df["Record"]))
 
-# Inicialização de contadores e lista de erros
+# Initializing Counters & Error list
 transfered_rows, affected_rows, fail_rows = 0, 0, 0
-list_falhas = []
+list_failures = []
 
-# Iteração dos arquivos de foto na Pasta
-for arquivo in os.listdir(FOTOS):
+# Iterating through files in the Photo Folder
+for file in os.listdir(PHOTOS):
     try:
-        if arquivo.lower().endswith(".jfif"):
-            # Extrai o Nome da Foto e a Extensão
-            nome_foto, extensao = os.path.splitext(arquivo)
-            nome_foto = unidecode(nome_foto.lower()) # Remove acentuação
+        if file.lower().endswith(".jfif"):
+            # Extract the Photo Name & Extension
+            name_photo, extension = os.path.splitext(file)
+            name_photo = unidecode(name_photo.lower()) # Remove accentuation
             
-            # Extrai o Código de Registro
-            registro = nome_p_registro.get(nome_foto)
+            # Extract Record from Username
+            record = name_to_record.get(name_photo)
             
-            # Caminho Original de cada foto
-            path_original = os.path.join(FOTOS, arquivo)
+            # Original Path of each photo
+            origin_path = os.path.join(PHOTOS, file)
             
-            # Verificar Registro Vazio
-            if registro in ['000nan']:
-                new_path = os.path.join(FOTOS_ISOLAD, arquivo)
-                shutil.move(path_original, new_path)
+            # Check for User without Record
+            if record in ['000nan']:
+                new_path = os.path.join(PHOTOS_ISOLATED, file)
+                shutil.move(origin_path, new_path)
                 transfered_rows += 1
-            elif registro in [None, 'None']:
-                new_path = os.path.join(FOTOS_FALHAS, arquivo)
-                shutil.move(path_original, new_path)
+            # Check for Photo without User
+            elif record in [None, 'None']:
+                new_path = os.path.join(PHOTOS_FAILURES, file)
+                shutil.move(origin_path, new_path)
                 fail_rows += 1
             else:
-                new_name = f"{registro}{extensao}"
-                new_path = os.path.join(FOTOS, new_name)
-                os.rename(path_original, new_path)
+                new_name = f"{record}{extension}"
+                new_path = os.path.join(PHOTOS, new_name)
+                os.rename(origin_path, new_path)
                 affected_rows += 1
     except Exception as e:
-        # Adiciona o nome do arquivo e a mensagem de erro
-        list_falhas.append((arquivo, str(e)))
+        # Add the file name and error message
+        list_failures.append((file, str(e)))
 
-# Relatório
-print("Processo concluído.")
-print(f"Fotos Renomeadas: {affected_rows}")
-print(f"Fotos Isoladas: {transfered_rows}")
-print(f"Fotos Falhas: {fail_rows}")
+# Report
+print("Process completed.")
+print(f"Renamed Photos: {affected_rows}")
+print(f"Isolated Photos: {transfered_rows}")
+print(f"Failed Photos: {fail_rows}")
 
-# Relatório Erros
-print("Erros:", end=" ")
-print(0) if not list_falhas else print("\n")
-for arquivo, erro in list_falhas:
-    print(f"Arquivo: {arquivo} - Erro: {erro}")
+# Error Report
+print("Errors:", end=" ")
+print(0) if not list_failures else print("\n")
+for file, error in list_failures:
+    print(f"File: {file} - Error: {error}")
