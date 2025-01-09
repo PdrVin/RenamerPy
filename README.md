@@ -1,6 +1,6 @@
 # Automação para Renomeação e Organização de Arquivos
 
-Este projeto foi desenvolvido durante meu estágio no Departamento de TI do UNIAENE com o objetivo de automatizar a renomeação e organização de arquivos com base em uma tabela de dados (CSV). Além disso, inclui a funcionalidade de reverter os arquivos renomeados para seus nomes originais.
+Este projeto foi desenvolvido durante meu estágio no Departamento de TI do UNIAENE com o objetivo de automatizar a renomeação e organização de arquivos com base em uma tabela de dados (CSV).
 
 ## Funcionalidades 🛠️
 
@@ -10,9 +10,6 @@ Este projeto foi desenvolvido durante meu estágio no Departamento de TI do UNIA
 - **Renomeação das fotos** com base no código de registro.
 - **Separar automaticamente** as fotos sem correspondência em uma pasta específica.
 - Geração de **relatórios detalhados** ao final do processo.
-
-### Reversão de Arquivos
-- Reverte os arquivos renomeados para seus nomes originais utilizando o histórico gerado pelo script.
 
 ## Benefícios 📈
 - Redução significativa do tempo gasto na organização manual.
@@ -28,10 +25,9 @@ Durante o desenvolvimento deste projeto, adquiri experiência prática em:
 
 ## Estrutura do Projeto 📂
 - `rename.py`: Script principal para renomeação de arquivos.
-- `reverse.py`: Script para reverter os nomes dos arquivos para o estado original.
 - `Fotos_Sistema/`: Pasta contendo as fotos a serem renomeadas.
-- `Fotos_Isoladas/`: Pasta contendo fotos sem correspondência.
-- `Fotos_Falhas/`: Pasta contendo fotos com erros.
+- `Fotos_Isoladas/`: Pasta que irá armazenar fotos sem correspondência.
+- `Fotos_Falhas/`: Pasta que irá armazenar fotos que geraram erros.
 
 ## Importações Necessárias
 ```python
@@ -59,15 +55,6 @@ from unidecode import unidecode
    ```bash
    python rename.py
    ```
-4. O script criará uma pasta separada para fotos sem correspondência e gerará um relatório em `relatorios/`.
-
-### Executando o Script de Reversão
-1. Certifique-se de que o histórico de renomeação está presente na pasta `relatorios/`.
-2. Execute o script de reversão:
-   ```bash
-   python reverse.py
-   ```
-3. Os arquivos serão revertidos para seus nomes originais com base no histórico.
 
 ---
 Espero que este projeto seja útil para automatizar suas tarefas e inspirar novas soluções práticas no dia a dia! 😄
